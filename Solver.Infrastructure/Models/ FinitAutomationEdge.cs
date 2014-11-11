@@ -8,7 +8,7 @@ namespace Solver.Infrastructure.Models
         public Dictionary<FinitAutomationEdge, Func<Cell, bool>> EdgesToMove { get; set; }
         public int Number { get; set; }
 
-        public void AddChild(FinitAutomationEdge edge, Func<Cell, bool> func)
+        public void AddPath(FinitAutomationEdge edge, Func<Cell, bool> func)
         {
             EdgesToMove.Add(edge, func);
         }

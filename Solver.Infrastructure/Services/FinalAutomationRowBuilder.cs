@@ -31,7 +31,7 @@ namespace Solver.Infrastructure.Services
                 return row;
             }
             var edge = row.CreateEdge();
-            edge.AddChild(edge, x => x.IsDelimeter);
+            edge.AddPath(edge, x => x.IsDelimeter);
             return new FinitAutomationRow();
         }
     }
