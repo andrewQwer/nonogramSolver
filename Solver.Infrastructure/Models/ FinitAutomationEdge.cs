@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Solver.Infrastructure.Models
 {
+    /// <summary>
+    /// Finit Automation edge
+    /// </summary>
+    [DebuggerDisplay("[Number = {Number}]")]
     public class  FinitAutomationEdge
     {
-        public Dictionary<FinitAutomationEdge, Func<Cell, bool>> EdgesToMove { get; set; }
         public int Number { get; set; }
-
-        public void AddPath(FinitAutomationEdge edge, Func<Cell, bool> func)
-        {
-            EdgesToMove.Add(edge, func);
-        }
 
         public override string ToString()
         {
@@ -20,7 +19,6 @@ namespace Solver.Infrastructure.Models
 
         public FinitAutomationEdge(int number)
         {
-            EdgesToMove = new Dictionary<FinitAutomationEdge, Func<Cell, bool>>();
             Number = number;
         }
     }

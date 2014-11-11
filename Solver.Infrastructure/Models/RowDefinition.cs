@@ -5,27 +5,30 @@ using System.Linq;
 
 namespace Solver.Infrastructure.Models
 {
+    /// <summary>
+    /// Represents definition for nonogram row
+    /// </summary>
     public class RowDefinition
     {
-        List<RowDefinitionItem> items;
+        List<RowDefinitionItem> _blocks;
 
         public RowDefinition()
         {
-            items = new List<RowDefinitionItem>();
+            _blocks = new List<RowDefinitionItem>();
         }
 
-        public IEnumerable<RowDefinitionItem> Items
+        public IEnumerable<RowDefinitionItem> Blocks
         {
-            get { return items; }
+            get { return _blocks; }
         }
 
         public void AddItem(RowDefinitionItem item)
         {
-            if (item.Length == 0 && items.Any())
+            if (item.Length == 0 && _blocks.Any())
             {
-                throw new ArgumentException("Row already contains items. Zero length item is not allowed.", "item");
+                throw new ArgumentException("Row already contains Blocks. Zero length item is not allowed.", "item");
             }
-            if (items.Any(x => x.Length == 0))
+            if (_blocks.Any(x => x.Length == 0))
             {
                 throw new ArgumentException("Zero length item  has already been added. Can't add new item.", "item");
             }
@@ -33,12 +36,12 @@ namespace Solver.Infrastructure.Models
             {
                 throw new ArgumentException("Length can't be less than 0. Can't add new item.", "item");
             }
-            items.Add(item);
+            _blocks.Add(item);
         }
 
         public void AddItem(int length)
         {
-            items.Add(new RowDefinitionItem(length));
+            _blocks.Add(new RowDefinitionItem(length));
         }
     }
 }

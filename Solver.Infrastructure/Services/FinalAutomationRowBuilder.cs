@@ -20,19 +20,38 @@ namespace Solver.Infrastructure.Services
             {
                 throw new ArgumentNullException("definition", "Value can't be null");
             }
-            if (!definition.Items.Any())
+            if (!definition.Blocks.Any())
             {
                 throw new ArgumentException( "Value can't be empty", "definition");
             }
 
             var row = new FinitAutomationRow();
-            if (definition.Items.All(x => x.Length == 0))
+            //zero row definition should return empty row
+            if (definition.Blocks.All(x => x.Length == 0))
             {
                 return row;
             }
             var edge = row.CreateEdge();
-            edge.AddPath(edge, x => x.IsDelimeter);
-            return new FinitAutomationRow();
+            RowDefinitionItem previousDef = null;
+            foreach (var currentDef in definition.Blocks)
+            {
+                var color = currentDef.Color;
+                //there should be a delimeter between blocks of the same color
+                if (previousDef != null && previousDef.Color == color)
+                {
+                    edge = row.AddPath(edge, row.CreateEdge(), x => x.IsDelimeter);
+                }
+                //if cell type is delimeter edge moves to istelf after every block in the row
+                row.AddPath(edge, x => x.IsDelimeter);
+                for (var i = 0; i < currentDef.Length; i++)
+                {
+                    edge = row.AddPath(edge, row.CreateEdge(), x => x.Color == color);
+                }
+                previousDef = currentDef;
+            }
+            //if cell type is delimeter the last edge moves to istelf
+            row.AddPath(edge, x => x.IsDelimeter);
+            return row;
         }
     }
 }
