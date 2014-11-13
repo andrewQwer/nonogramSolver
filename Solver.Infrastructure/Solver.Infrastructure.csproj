@@ -43,10 +43,12 @@
     <Compile Include="Models\ FinitAutomationEdge.cs" />
     <Compile Include="Models\Cell.cs" />
     <Compile Include="Models\FinitAutomationRow.cs" />
+    <Compile Include="Models\Row.cs" />
     <Compile Include="Models\RowDefinition.cs" />
     <Compile Include="Models\RowDefinitionItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\FinitAutomationRowBuilder.cs" />
+    <Compile Include="Services\RowSolver.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

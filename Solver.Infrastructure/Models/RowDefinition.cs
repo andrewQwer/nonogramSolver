@@ -22,6 +22,11 @@ namespace Solver.Infrastructure.Models
             get { return _blocks; }
         }
 
+        public bool IsEmpty
+        {
+            get { return !Blocks.Any(); }
+        }
+
         public void AddItem(RowDefinitionItem item)
         {
             if (item.Length == 0 && _blocks.Any())
@@ -39,9 +44,13 @@ namespace Solver.Infrastructure.Models
             _blocks.Add(item);
         }
 
+        /// <summary>
+        /// Adds block of specific length to the row definition
+        /// </summary>
+        /// <param name="length"></param>
         public void AddItem(int length)
         {
-            _blocks.Add(new RowDefinitionItem(length));
+            AddItem(new RowDefinitionItem(length));
         }
     }
 }
