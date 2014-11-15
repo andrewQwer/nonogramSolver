@@ -38,6 +38,12 @@
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="StructureMap">
+      <HintPath>..\packages\structuremap.3.1.4.143\lib\net40\StructureMap.dll</HintPath>
+    </Reference>
+    <Reference Include="StructureMap.Net4">
+      <HintPath>..\packages\structuremap.3.1.4.143\lib\net40\StructureMap.Net4.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
   </ItemGroup>
@@ -53,7 +59,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FinitAutomationBuilderTest.cs" />
     <Compile Include="RowDefinitionTest.cs" />
+    <Compile Include="RowSolverTest.cs" />
     <Compile Include="RowTest.cs" />
+    <Compile Include="StructureMapTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
