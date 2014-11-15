@@ -1,4 +1,6 @@
-﻿using Solver.Infrastructure.Models;
+﻿using System;
+using System.Linq;
+using Solver.Infrastructure.Models;
 
 namespace Solver.Infrastructure.Services
 {
@@ -9,10 +11,22 @@ namespace Solver.Infrastructure.Services
 
     public class RowSolver : IRowSolver
     {
+        private IFinitAutomationRowBuilder faRowBuilder;
+
+        public RowSolver(IFinitAutomationRowBuilder faRowBuilder)
+        {
+            this.faRowBuilder = faRowBuilder;
+        }
 
         public void SolveRow(Row row)
         {
-            throw new System.NotImplementedException();
+            if (row == null)
+                throw new ArgumentNullException("row");
+            var cells = row.Cells;
+            if (row.Blocks.Count() == 1 && row.Blocks.First().Length == row.Cells.Count)
+            {
+                cells.ForEach(x=>x.Color = row.Blocks.First().Color);
+            }
         }
     }
 }

@@ -55,7 +55,7 @@ namespace Solver.Tests
             Assert.AreEqual(row.EdgesRelations(row.LastEdge).First(), row.LastEdge);
             var cell = new Cell
             {
-                IsDelimeter = true
+                State = CellState.Delimeter
             };
             Assert.True(row.ConditionsRelations(row.FirstEdge).Any(x => x(cell)));
             Assert.True(row.ConditionsRelations(row.LastEdge).Any(x => x(cell)));
@@ -93,7 +93,7 @@ namespace Solver.Tests
 
             var cellDelimeter = new Cell
             {
-                IsDelimeter = true
+                State = CellState.Delimeter
             };
             var coloredCell = new Cell
             {

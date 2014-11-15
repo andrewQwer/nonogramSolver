@@ -18,7 +18,7 @@ namespace Solver.Infrastructure.Models
         public RowDefinitionItem(int length)
         {
             Length = length;
-            Color = Color.Black;
+            Color = Cell.DefaultColor;
         }
     }
 }
