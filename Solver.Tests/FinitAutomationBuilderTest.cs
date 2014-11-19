@@ -71,7 +71,38 @@ namespace Solver.Tests
         }
 
         [Test]
-        public void FAB_generates_valid_row_for_2_items()
+        public void FAB_generates_valid_row_for_2_items_of_the_same_color()
+        {
+            var def = new RowDefinition();
+            def.AddItem(new RowDefinitionItem(3, Color.Red));
+            def.AddItem(new RowDefinitionItem(2, Color.Yellow));
+            var row = rowBuilder.BuildFARow(def);
+
+            Assert.AreEqual(6, row.LastEdgeNumber);
+            Assert.AreEqual(row.EdgesRelations(row.FirstEdge).First(), row.FirstEdge);
+            Assert.AreEqual(row.EdgesRelations(row.LastEdge).First(), row.LastEdge);
+
+            var cellDelimeter = new Cell
+            {
+                State = CellState.Delimeter
+            };
+            var redCell = new Cell
+            {
+                Color = Color.Red
+            };
+            var yellowCell = new Cell
+            {
+                Color = Color.Yellow
+            };
+            Assert.True(row.ConditionsRelations(row.FirstEdge).Any(x => x(cellDelimeter)));
+            Assert.True(row.ConditionsRelations(row.LastEdge).Any(x => x(cellDelimeter)));
+            Assert.True(row.ConditionsRelations(row.FirstEdge).Any(x => x(redCell)));
+            Assert.True(row.ConditionsRelations(row.Edges.ElementAt(3)).Any(x => x(cellDelimeter)));
+            Assert.True(row.ConditionsRelations(row.Edges.ElementAt(3)).Any(x => x(yellowCell)));
+        }
+        
+        [Test]
+        public void FAB_generates_valid_row_for_2_items_of_the_different_colors()
         {
             var rnd = new Random();
             var blocksToGenerate = rnd.Next(2, 10);

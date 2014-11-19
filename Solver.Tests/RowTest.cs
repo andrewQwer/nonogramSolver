@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using NUnit.Framework;
 using Solver.Infrastructure.DI;
@@ -46,6 +47,27 @@ namespace Solver.Tests
             def.AddItem(3);
             var row = new Row(def, 3);
             Assert.True(row.Cells.TrueForAll(x => x.State == CellState.Undefined));
+        }
+        
+        [Test]
+        public void Cant_create_row_if_definition_doesnt_match_row_length()
+        {
+            var def = new RowDefinition();
+            def.AddItem(3);
+            Assert.Throws<ArgumentException>(() => new Row(def, 2));
+            Assert.DoesNotThrow(() => new Row(def, 3));
+
+            def = new RowDefinition();
+            def.AddItem(3);
+            def.AddItem(2);
+            Assert.Throws<ArgumentException>(() => new Row(def, 5));
+            Assert.DoesNotThrow(() => new Row(def, 6));
+            
+            def = new RowDefinition();
+            def.AddItem(new RowDefinitionItem(3, Color.Red));
+            def.AddItem(new RowDefinitionItem(2, Color.Yellow));
+            Assert.Throws<ArgumentException>(() => new Row(def, 4));
+            Assert.DoesNotThrow(() => new Row(def, 5));
         }
     }
 }
