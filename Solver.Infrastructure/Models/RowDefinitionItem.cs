@@ -16,9 +16,15 @@ namespace Solver.Infrastructure.Models
         /// </summary>
         /// <param name="length"></param>
         public RowDefinitionItem(int length)
+            : this(length, Cell.DefaultColor)
+        {
+
+        }
+
+        public RowDefinitionItem(int length, Color color)
         {
             Length = length;
-            Color = Cell.DefaultColor;
+            Color = color;
         }
     }
 }

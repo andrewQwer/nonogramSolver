@@ -8,6 +8,7 @@ namespace Solver.Infrastructure.Models
         Delimeter,
         Solved
     }
+
     public class Cell
     {
         public static readonly Color DefaultColor = Color.Black;
@@ -32,6 +33,11 @@ namespace Solver.Infrastructure.Models
         public bool IsDelimeter
         {
             get { return State == CellState.Delimeter; }
+        }
+
+        public bool IsSolved
+        {
+            get { return State == CellState.Solved; }
         }
     }
 }
