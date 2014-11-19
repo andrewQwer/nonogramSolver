@@ -39,5 +39,10 @@ namespace Solver.Infrastructure.Models
         {
             get { return State == CellState.Solved; }
         }
+
+        public bool IsUndefined
+        {
+            get { return State == CellState.Undefined; }
+        }
     }
 }

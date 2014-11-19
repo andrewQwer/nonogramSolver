@@ -51,6 +51,13 @@ namespace Solver.Infrastructure.Models
             }
         }
 
+        public Dictionary<FinitAutomationEdge, Func<Cell, bool>> EdgeData(FinitAutomationEdge edge)
+        {
+            return edges.ContainsKey(edge)
+                ? edges[edge]
+                : null;
+        }
+
         public IEnumerable<FinitAutomationEdge> EdgesRelations(FinitAutomationEdge edge)
         {
             return edges.ContainsKey(edge)
