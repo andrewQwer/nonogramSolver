@@ -19,7 +19,11 @@ namespace Solver.Infrastructure.Models
         public Row(RowDefinition definition, int cellsCount)
         {
             ValidateData(definition, cellsCount);
-            Cells = new List<Cell>(Enumerable.Repeat(new Cell(), cellsCount));
+            Cells = new List<Cell>();
+            for (int i = 0; i < cellsCount; i++)
+            {
+                Cells.Add(new Cell());
+            }
             Definition = definition;
             State = RowState.Undefined;
         }

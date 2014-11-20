@@ -115,5 +115,12 @@ namespace Solver.Infrastructure.Models
             edges.Add(edge, new Dictionary<FinitAutomationEdge, Func<Cell, bool>>());
             return edge;
         }
+
+        public FinitAutomationEdge GetEdgeByNumber(int edgeNumber)
+        {
+            if (edgeNumber > LastEdgeNumber || edgeNumber < 0)
+                return null;
+            return Edges.FirstOrDefault(x => x.Number == edgeNumber);
+        }
     }
 }

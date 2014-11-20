@@ -1,29 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Solver.Infrastructure.Models
 {
+    [DebuggerDisplay("Cell = {CellNumber}, Edge = {EdgeNumber}")]
     public struct EdgeCellData :IEqualityComparer<EdgeCellData>
     {
-        public int CellId { get; set; }
+        public int CellNumber { get; set; }
         public int EdgeNumber { get; set; }
 
-        public EdgeCellData(int cellId, int edgeNumber) : this()
+        public EdgeCellData(int cellNum, int edgeNum) : this()
         {
-            CellId = cellId;
-            EdgeNumber = edgeNumber;
+            CellNumber = cellNum;
+            EdgeNumber = edgeNum;
         }
 
         public override int GetHashCode()
         {
-            int hash = CellId;
+            int hash = CellNumber;
             hash = hash * 31 + EdgeNumber;
             return hash.GetHashCode();
         }
 
         public bool Equals(EdgeCellData x, EdgeCellData y)
         {
-            return x.CellId == y.CellId && x.EdgeNumber == y.EdgeNumber;
+            return x.CellNumber == y.CellNumber && x.EdgeNumber == y.EdgeNumber;
         }
 
         public int GetHashCode(EdgeCellData obj)
