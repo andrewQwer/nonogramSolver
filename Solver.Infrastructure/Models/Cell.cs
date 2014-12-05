@@ -17,9 +17,9 @@ namespace Solver.Infrastructure.Models
     {
         public static readonly Color DefaultColor = Color.Black;
 
-        public CellState State { get; set; }
+        public CellState State { get; private set; }
 
-        public Color Color { get; set; }
+        public Color Color { get; private set; }
 
         public Cell()
         {
@@ -29,7 +29,7 @@ namespace Solver.Infrastructure.Models
         public Cell(Color color)
             : this()
         {
-            Color = color;
+            SetColor(color);
         }
 
         public bool IsDelimeter
@@ -37,9 +37,9 @@ namespace Solver.Infrastructure.Models
             get { return State == CellState.Delimeter; }
         }
 
-        public bool IsSolved
+        public bool HasColor
         {
-            get { return State == CellState.Colored; }
+            get { return Color != Color.Empty; }
         }
 
         public bool IsUndefined
@@ -47,13 +47,14 @@ namespace Solver.Infrastructure.Models
             get { return State == CellState.Undefined; }
         }
 
-        public Cell Clone()
+        public static Cell Delimeter
         {
-            return new Cell
+            get
             {
-                Color = this.Color,
-                State = this.State
-            };
+                var c = new Cell();
+                c.SetDelimeter();
+                return c;
+            }
         }
 
         public void SetDelimeter()
@@ -72,10 +73,11 @@ namespace Solver.Infrastructure.Models
             return obj.Color.GetHashCode() ^ obj.State.GetHashCode();
         }
 
-        public void CopyFrom(Cell c)
+        public void SetColor(Color color)
         {
-            this.Color = c.Color;
-            this.State = c.State;
+            Color = color;
+            if (Color != Color.Empty)
+                State = CellState.Colored;
         }
     }
 }

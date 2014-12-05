@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Solver.Infrastructure.Models;
 
 namespace Solver.Infrastructure.Services
@@ -27,76 +26,83 @@ namespace Solver.Infrastructure.Services
                 throw new ArgumentNullException("row");
             if (row.State == RowState.Solved)
                 return;
-            var cells = row.Cells;
-            //solve row if definition fills full row with 1 item
-            if (row.Blocks.Count() == 1 && row.Blocks.First().Length == row.Cells.Count)
-            {
-                cells.ForEach(x => x.Color = row.Blocks.First().Color);
-            }
             var faRow = faRowBuilder.BuildFARow(row.Definition);
-            var rowColors = row.Blocks.Select(x => x.Color);
-            var possibleCellsByColors = rowColors.Select(x => new Cell(x));
-            var delimeterCell = new Cell
-            {
-                State = CellState.Delimeter
-            };
-            var possibleCells = new List<Cell>(possibleCellsByColors);
-            possibleCells.Add(delimeterCell);
+            var possibleCellsByColors = row.Blocks.Select(x => new Cell(x.Color));
+            //list of possible cells combinations for the current row
+            var possibleCells = ImmutableList<Cell>.Empty
+                .AddRange(possibleCellsByColors)
+                .Add(Cell.Delimeter);
+            //declare the main graph for row solving
             var map = ImmutableDirectedGraph<EdgeCellData, Cell>.Empty;
+            //the first point to draw graph (0 - cell idx, 1 - edge number)
             var startingData = new EdgeCellData(0, 1);
+            //this variable will contain the last created edges on each iteration over the row
             var lastFilledEdges = ImmutableList<EdgeCellData>.Empty.Add(startingData);
-            lastFilledEdges.Clear();
+            //edges created on each iteration
+            var newEdges = new List<EdgeCellData>();
             for (int cIdx = 0; cIdx < row.Cells.Count; cIdx++)
             {
                 var cell = row.Cells[cIdx];
-                var cellToCheck = cell.IsUndefined
+                var curPossibleCells = cell.IsUndefined
                     ? possibleCells
-                    : new List<Cell>
-                    {
-                        cell
-                    };
-                var newEdges = new List<EdgeCellData>();
+                    : ImmutableList<Cell>.Empty.Add(cell);
+                newEdges.Clear();
+                //iterate over the last filled edges to determine the possible paths from these edges
                 foreach (var lastFilledEdge in lastFilledEdges)
                 {
                     var edge = faRow.GetEdgeByNumber(lastFilledEdge.EdgeNumber);
                     var edgeData = faRow.EdgeData(edge);
-                    var edgesToMove = edgeData.Where(x => cellToCheck.Any(pc => x.Value(pc)));
-
+                    //possible moves from the edge accroding to possible current cell's states
+                    var edgesToMove = edgeData.Where(x => curPossibleCells.Any(pc => x.Value(pc)));
+                    //generate new edges for the graph
                     foreach (var etm in edgesToMove)
                     {
                         var endEdge = new EdgeCellData(cIdx + 1, etm.Key.Number);
                         newEdges.Add(endEdge);
-                        map = map.AddEdge(lastFilledEdge, endEdge, cellToCheck.First(c => etm.Value(c)));
+                        map = map.AddEdge(lastFilledEdge, endEdge, curPossibleCells.First(c => etm.Value(c)));
                     }
                 }
                 lastFilledEdges = ImmutableList<EdgeCellData>.Empty.AddRange(newEdges);
             }
-            var pathes = new List<ImmutableStack<KeyValuePair<Cell, EdgeCellData>>>();
-            foreach (var path in map.AllEdgeTraversals(startingData, x => map.Edges(x)))
+            //get all paths that ends with the last edge-cell combination
+            var paths =
+                (from path in map.AllEdgeTraversals(startingData, x => map.Edges(x))
+                 let lastNode = path.Last().Value
+                 where lastNode.Equals(new EdgeCellData(row.Cells.Count, faRow.LastEdgeNumber))
+                 select path)
+                 .ToList();
+            //if there are no paths that lead to the last edge-cell combination then row can't be solved with the 
+            //current definition
+            if (!paths.Any())
             {
-                var lastNode = path.Last().Value;
-                if (lastNode.Equals(new EdgeCellData(row.Cells.Count, faRow.LastEdgeNumber)))
-                {
-                    pathes.Add(path);
-                }
+                row.State = RowState.NoSolution;
+                return;
             }
-            var groupedCellss =
-                (from stack in pathes
-                 from i in stack
-                 group i by i.Value.CellNumber into iGrouped
-                 select iGrouped)
-                 .ToDictionary(key => key.Key, key => new HashSet<Cell>(key.Select(x => x.Key)));
-            var solvedCells = groupedCellss.Where(x => x.Value.Count == 1);
+            //group paths by cell index to determine possible cell states
+            var groupedCells =
+                (
+                 from stack in paths
+                 from cellEdgePair in stack
+                 group cellEdgePair by cellEdgePair.Value.CellNumber into cellEdgePairGrouped
+                 select cellEdgePairGrouped
+                 ).ToDictionary(key => key.Key, key => new HashSet<Cell>(key.Select(x => x.Key)));
+            //cell is solved if only 1 possible state exists for this cell
+            var solvedCells = groupedCells.Where(x => x.Value.Count == 1);
             foreach (var solvedCell in solvedCells)
             {
                 var cellTemplate = solvedCell.Value.First();
-                row.Cells[solvedCell.Key - 1].Color = cellTemplate.Color;
-                row.Cells[solvedCell.Key - 1].State = cellTemplate.IsDelimeter
-                ? CellState.Delimeter
-                : CellState.Colored;
+                var cellId = solvedCell.Key - 1;
+                if (cellTemplate.IsDelimeter)
+                {
+                    row.Cells[cellId].SetDelimeter();
+                }
+                else
+                {
+                    row.Cells[cellId].SetColor(cellTemplate.Color);
+                }
             }
             //check whether all cells have been solved
-            if (row.Cells.TrueForAll(x => x.IsSolved))
+            if (row.Cells.TrueForAll(x => x.HasColor || x.IsDelimeter))
             {
                 row.State = RowState.Solved;
             }

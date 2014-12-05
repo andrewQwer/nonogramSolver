@@ -22,6 +22,9 @@ namespace Solver.Infrastructure.Models
             get { return _blocks; }
         }
 
+        /// <summary>
+        /// Returns true if blocks doesn't contain any definition item
+        /// </summary>
         public bool IsEmpty
         {
             get { return !Blocks.Any(); }

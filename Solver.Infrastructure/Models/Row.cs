@@ -7,6 +7,7 @@ namespace Solver.Infrastructure.Models
     public enum RowState
     {
         Undefined,
+        NoSolution,
         Solved
     }
 
