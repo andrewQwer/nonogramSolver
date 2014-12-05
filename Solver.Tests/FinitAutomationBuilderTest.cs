@@ -53,16 +53,12 @@ namespace Solver.Tests
             Assert.AreEqual(itemLength + 1, row.LastEdgeNumber);
             Assert.AreEqual(row.EdgesRelations(row.FirstEdge).First(), row.FirstEdge);
             Assert.AreEqual(row.EdgesRelations(row.LastEdge).First(), row.LastEdge);
-            var cell = new Cell
-            {
-                State = CellState.Delimeter
-            };
+            var cell = Cell.Delimeter;
+
             Assert.True(row.ConditionsRelations(row.FirstEdge).Any(x => x(cell)));
             Assert.True(row.ConditionsRelations(row.LastEdge).Any(x => x(cell)));
-            cell = new Cell
-            {
-                Color = Color.Black
-            };
+            cell = new Cell();
+            cell.SetColor(Color.Black);
             Assert.True(row.ConditionsRelations(row.FirstEdge).Any(x => x(cell)));
             foreach (var edge in row.Edges.Except(new []{row.LastEdge, row.FirstEdge}))
             {
@@ -82,18 +78,9 @@ namespace Solver.Tests
             Assert.AreEqual(row.EdgesRelations(row.FirstEdge).First(), row.FirstEdge);
             Assert.AreEqual(row.EdgesRelations(row.LastEdge).First(), row.LastEdge);
 
-            var cellDelimeter = new Cell
-            {
-                State = CellState.Delimeter
-            };
-            var redCell = new Cell
-            {
-                Color = Color.Red
-            };
-            var yellowCell = new Cell
-            {
-                Color = Color.Yellow
-            };
+            var cellDelimeter = Cell.Delimeter;
+            var redCell = new Cell(Color.Red);
+            var yellowCell = new Cell(Color.Yellow);
             Assert.True(row.ConditionsRelations(row.FirstEdge).Any(x => x(cellDelimeter)));
             Assert.True(row.ConditionsRelations(row.LastEdge).Any(x => x(cellDelimeter)));
             Assert.True(row.ConditionsRelations(row.FirstEdge).Any(x => x(redCell)));
@@ -122,14 +109,9 @@ namespace Solver.Tests
             Assert.AreEqual(row.EdgesRelations(row.FirstEdge).First(), row.FirstEdge);
             Assert.AreEqual(row.EdgesRelations(row.LastEdge).First(), row.LastEdge);
 
-            var cellDelimeter = new Cell
-            {
-                State = CellState.Delimeter
-            };
-            var coloredCell = new Cell
-            {
-                Color = Color.Black
-            };
+            var cellDelimeter = Cell.Delimeter;
+            var coloredCell = new Cell(Color.Black);
+
             Assert.True(row.ConditionsRelations(row.FirstEdge).Any(x => x(cellDelimeter)));
             Assert.True(row.ConditionsRelations(row.LastEdge).Any(x => x(cellDelimeter)));
             Assert.True(row.ConditionsRelations(row.FirstEdge).Any(x => x(coloredCell)));
