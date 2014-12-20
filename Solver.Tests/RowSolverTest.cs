@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using NUnit.Framework;
@@ -107,6 +108,18 @@ namespace Solver.Tests
             row.Cells[1].SetDelimeter();
             rowSolver.SolveRow(row);
             Assert.AreEqual(RowState.NoSolution, row.State);
+        }
+
+        [Test]
+        public void Solve_complex_row()
+        {
+            var rowDef = new RowDefinition(4, 2, 3, 1, 2);
+            var row = new Row(rowDef, 50);
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            rowSolver.SolveRow(row);
+            stopWatch.Stop();
+            Console.WriteLine(stopWatch.Elapsed);
         }
     }
 }

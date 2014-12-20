@@ -42,7 +42,26 @@ namespace Solver.Infrastructure.Services
 
         private void SolveRows(List<Row> rows, Nonogram nonogram, SolveStatistics res)
         {
-            Parallel.ForEach(rows, rowSolver.SolveRow);
+            var watch = new Stopwatch();
+//            Parallel.ForEach(rows, row =>
+//            {
+//                Debug.Write("Solving row:   Blocks: " + row.Blocks.Count() + ". Solved for: ");
+//                watch.Restart();
+//                rowSolver.SolveRow(row);
+//                watch.Stop();
+//                Debug.Write(watch.Elapsed);
+//                Debug.WriteLine("");
+//            });
+            for (int index = 0; index < rows.Count; index++)
+            {
+                var row = rows[index];
+                Debug.Write("Solving row: " + (index + 1)+". Blocks: " + row.Blocks.Count()+". Solved for: ");
+                watch.Restart();
+                rowSolver.SolveRow(row);
+                watch.Stop();
+                Debug.Write(watch.Elapsed);
+                Debug.WriteLine("");
+            }
             Debug.WriteLine(nonogram.ToString());
             res.IterationsCount++;
             if (rows.TrueForAll(x => x.State == RowState.Solved))
