@@ -16,6 +16,14 @@ namespace Solver.Infrastructure.Models
         {
             _blocks = new List<RowDefinitionItem>();
         }
+        public RowDefinition(params int[] items)
+            : this()
+        {
+            foreach (var item in items)
+            {
+                AddItem(item);
+            }
+        }
 
         public IEnumerable<RowDefinitionItem> Blocks
         {
