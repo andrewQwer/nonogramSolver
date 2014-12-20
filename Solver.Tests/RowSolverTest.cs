@@ -114,7 +114,7 @@ namespace Solver.Tests
         public void Solve_complex_row()
         {
             var rowDef = new RowDefinition(4, 2, 3, 1, 2);
-            var row = new Row(rowDef, 50);
+            var row = new Row(rowDef, 40);
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             rowSolver.SolveRow(row);

@@ -27,7 +27,7 @@ namespace Solver.Infrastructure.Services
             if (row.State == RowState.Solved)
                 return;
             var faRow = faRowBuilder.BuildFARow(row.Definition);
-            var possibleCellsByColors = row.Blocks.Select(x => new Cell(x.Color));
+            var possibleCellsByColors = row.Blocks.Select(x => new Cell(x.Color)).Distinct(Cell.EqualityComparer);
             //list of possible cells combinations for the current row
             var possibleCells = ImmutableList<Cell>.Empty
                 .AddRange(possibleCellsByColors)
@@ -85,7 +85,7 @@ namespace Solver.Infrastructure.Services
                  from cellEdgePair in stack
                  group cellEdgePair by cellEdgePair.Value.CellNumber into cellEdgePairGrouped
                  select cellEdgePairGrouped
-                 ).ToDictionary(key => key.Key, key => new HashSet<Cell>(key.Select(x => x.Key)));
+                 ).ToDictionary(key => key.Key, key => new HashSet<Cell>(key.Select(x => x.Key), Cell.EqualityComparer));
             //cell is solved if only 1 possible state exists for this cell
             var solvedCells = groupedCells.Where(x => x.Value.Count == 1);
             foreach (var solvedCell in solvedCells)

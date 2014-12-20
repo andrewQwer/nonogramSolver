@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Dynamic;
 
 namespace Solver.Infrastructure.Models
 {
@@ -13,7 +14,7 @@ namespace Solver.Infrastructure.Models
     }
 
     [DebuggerDisplay("Color = {Color}, State = {State}")]
-    public class Cell : IEqualityComparer<Cell>
+    public class Cell
     {
         public static readonly Color DefaultColor = Color.Black;
 
@@ -63,6 +64,24 @@ namespace Solver.Infrastructure.Models
             Color = Color.Empty;
         }
 
+        public void SetColor(Color color)
+        {
+            Color = color;
+            if (Color != Color.Empty)
+                State = CellState.Colored;
+        }
+
+        public static IEqualityComparer<Cell> EqualityComparer
+        {
+            get
+            {
+                return new CellEqualityComparer();
+            }
+        }
+    }
+
+    public class CellEqualityComparer : IEqualityComparer<Cell>
+    {
         public bool Equals(Cell x, Cell y)
         {
             return x.Color == y.Color && x.State == y.State;
@@ -71,13 +90,6 @@ namespace Solver.Infrastructure.Models
         public int GetHashCode(Cell obj)
         {
             return obj.Color.GetHashCode() ^ obj.State.GetHashCode();
-        }
-
-        public void SetColor(Color color)
-        {
-            Color = color;
-            if (Color != Color.Empty)
-                State = CellState.Colored;
         }
     }
 }
