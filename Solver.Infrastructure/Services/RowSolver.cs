@@ -29,15 +29,16 @@ namespace Solver.Infrastructure.Services
             var faRow = faRowBuilder.BuildFARow(row.Definition);
             var possibleCellsByColors = row.Blocks.Select(x => new Cell(x.Color)).Distinct(Cell.EqualityComparer);
             //list of possible cells combinations for the current row
-            var possibleCells = ImmutableList<Cell>.Empty
-                .AddRange(possibleCellsByColors)
-                .Add(Cell.Delimeter);
+            var possibleCells = new List<Cell>(possibleCellsByColors.Count() + 1);
+            possibleCells.AddRange(possibleCellsByColors);
+            possibleCells.Add(Cell.Delimeter);
             //declare the main graph for row solving
             var map = ImmutableDirectedGraph<EdgeCellData, Cell>.Empty;
             //the first point to draw graph (0 - cell idx, 1 - edge number)
             var startingData = new EdgeCellData(0, 1);
             //this variable will contain the last created edges on each iteration over the row
-            var lastFilledEdges = ImmutableList<EdgeCellData>.Empty.Add(startingData);
+            var lastFilledEdges = new List<EdgeCellData>();
+            lastFilledEdges.Add(startingData);
             //edges created on each iteration
             var newEdges = new List<EdgeCellData>();
             for (int cIdx = 0; cIdx < row.Cells.Count; cIdx++)
@@ -45,7 +46,7 @@ namespace Solver.Infrastructure.Services
                 var cell = row.Cells[cIdx];
                 var curPossibleCells = cell.IsUndefined
                     ? possibleCells
-                    : ImmutableList<Cell>.Empty.Add(cell);
+                    : new List<Cell> { cell };
                 newEdges.Clear();
                 //iterate over the last filled edges to determine the possible paths from these edges
                 foreach (var lastFilledEdge in lastFilledEdges)
@@ -62,7 +63,7 @@ namespace Solver.Infrastructure.Services
                         map = map.AddEdge(lastFilledEdge, endEdge, curPossibleCells.First(c => etm.Value(c)));
                     }
                 }
-                lastFilledEdges = ImmutableList<EdgeCellData>.Empty.AddRange(newEdges);
+                lastFilledEdges = new List<EdgeCellData>(newEdges);
             }
             //get all paths that ends with the last edge-cell combination
             var paths =
