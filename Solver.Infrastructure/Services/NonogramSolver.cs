@@ -28,23 +28,22 @@ namespace Solver.Infrastructure.Services
 
             if (nonogram.HorizontalRows.Count == 0 || nonogram.VerticalRows.Count == 0)
                 throw new ArgumentException("Nonogram is empty", "nonogram");
+
             var res = new SolveStatistics();
-            var iterationsCount = 0;
-            while (!nonogram.IsSolved && iterationsCount < 100)
+            while (!nonogram.IsSolved && res.IterationsCount < 100)
             {
                 Parallel.ForEach(nonogram.HorizontalRows, rowSolver.SolveRow);
                 Debug.WriteLine(nonogram.ToString());
-                iterationsCount++;
+                res.IterationsCount++;
 
                 Parallel.ForEach(nonogram.VerticalRows, rowSolver.SolveRow);
                 Debug.WriteLine(nonogram.ToString());
-                iterationsCount++;
+                res.IterationsCount++;
                 if (nonogram.HorizontalRows.TrueForAll(x => x.State == RowState.Solved))
                 {
                     nonogram.SetState(NonogramState.Solved);
                 }
             }
-            res.IterationsCount = iterationsCount;
             return res;
         }
     }
