@@ -30,21 +30,25 @@ namespace Solver.Infrastructure.Services
                 throw new ArgumentException("Nonogram is empty", "nonogram");
 
             var res = new SolveStatistics();
-            while (!nonogram.IsSolved && res.IterationsCount < 100)
-            {
-                Parallel.ForEach(nonogram.HorizontalRows, rowSolver.SolveRow);
-                Debug.WriteLine(nonogram.ToString());
-                res.IterationsCount++;
 
-                Parallel.ForEach(nonogram.VerticalRows, rowSolver.SolveRow);
-                Debug.WriteLine(nonogram.ToString());
-                res.IterationsCount++;
-                if (nonogram.HorizontalRows.TrueForAll(x => x.State == RowState.Solved))
-                {
-                    nonogram.SetState(NonogramState.Solved);
-                }
-            }
+            do
+            {
+                SolveRows(nonogram.HorizontalRows, nonogram, res);
+                SolveRows(nonogram.VerticalRows, nonogram, res);
+            } while (!nonogram.IsSolved && res.IterationsCount < 100);
+
             return res;
+        }
+
+        private void SolveRows(List<Row> rows, Nonogram nonogram, SolveStatistics res)
+        {
+            Parallel.ForEach(rows, rowSolver.SolveRow);
+            Debug.WriteLine(nonogram.ToString());
+            res.IterationsCount++;
+            if (rows.TrueForAll(x => x.State == RowState.Solved))
+            {
+                nonogram.SetState(NonogramState.Solved);
+            }
         }
     }
 }
