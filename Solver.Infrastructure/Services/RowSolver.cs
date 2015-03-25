@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Linq;
 using Solver.Infrastructure.Models;
 
@@ -32,81 +33,127 @@ namespace Solver.Infrastructure.Services
             var possibleCells = new List<Cell>(possibleCellsByColors.Count() + 1);
             possibleCells.AddRange(possibleCellsByColors);
             possibleCells.Add(Cell.Delimeter);
-            //declare the main graph for row solving
-            var map = ImmutableDirectedGraph<EdgeCellData, Cell>.Empty;
-            //the first point to draw graph (0 - cell idx, 1 - edge number)
-            var startingData = new EdgeCellData(0, 1);
-            //this variable will contain the last created edges on each iteration over the row
-            var lastFilledEdges = new List<EdgeCellData>();
-            lastFilledEdges.Add(startingData);
-            //edges created on each iteration
-            var newEdges = new List<EdgeCellData>();
-            for (int cIdx = 0; cIdx < row.Cells.Count; cIdx++)
-            {
-                var cell = row.Cells[cIdx];
-                var curPossibleCells = cell.IsUndefined
-                    ? possibleCells
-                    : new List<Cell> { cell };
-                newEdges.Clear();
-                //iterate over the last filled edges to determine the possible paths from these edges
-                foreach (var lastFilledEdge in lastFilledEdges)
-                {
-                    var edge = faRow.GetEdgeByNumber(lastFilledEdge.EdgeNumber);
-                    var edgeData = faRow.EdgeData(edge);
-                    //possible moves from the edge accroding to possible current cell's states
-                    var edgesToMove = edgeData.Where(x => curPossibleCells.Any(pc => x.Value(pc)));
-                    //generate new edges for the graph
-                    foreach (var etm in edgesToMove)
-                    {
-                        var endEdge = new EdgeCellData(cIdx + 1, etm.Key.Number);
-                        newEdges.Add(endEdge);
-                        map = map.AddEdge(lastFilledEdge, endEdge, curPossibleCells.First(c => etm.Value(c)));
-                    }
-                }
-                lastFilledEdges = new List<EdgeCellData>(newEdges);
-            }
-            //get all paths that ends with the last edge-cell combination
-            var paths =
-                (from path in map.AllEdgeTraversals(startingData, x => map.Edges(x))
-                 let lastNode = path.Last().Value
-                 where lastNode.Equals(new EdgeCellData(row.Cells.Count, faRow.LastEdgeNumber))
-                 select path)
-                 .ToList();
-            //if there are no paths that lead to the last edge-cell combination then row can't be solved with the 
-            //current definition
-            if (!paths.Any())
+            var route = new Route();
+            BuildRoute(row.Cells, faRow, possibleCells, 0, 1, route);
+            ClearDeadRoutes(route, faRow, row.Cells.Count);
+            if (!route.ChildRoutes.Any())
             {
                 row.State = RowState.NoSolution;
                 return;
             }
-            //group paths by cell index to determine possible cell states
-            var groupedCells =
-                (
-                 from stack in paths
-                 from cellEdgePair in stack
-                 group cellEdgePair by cellEdgePair.Value.CellNumber into cellEdgePairGrouped
-                 select cellEdgePairGrouped
-                 ).ToDictionary(key => key.Key, key => new HashSet<Cell>(key.Select(x => x.Key), Cell.EqualityComparer));
-            //cell is solved if only 1 possible state exists for this cell
-            var solvedCells = groupedCells.Where(x => x.Value.Count == 1);
-            foreach (var solvedCell in solvedCells)
+            var routes = GetAllRoutes(route);
+            var groupedRoutes = from r in routes
+                                group r by r.CellIdx into rGrouped
+                                select rGrouped;
+
+            foreach (var r in groupedRoutes)
             {
-                var cellTemplate = solvedCell.Value.First();
-                var cellId = solvedCell.Key - 1;
-                if (cellTemplate.IsDelimeter)
-                {
-                    row.Cells[cellId].SetDelimeter();
-                }
+                var cells = r.Select(x => x.Cell).ToList();
+                var first = cells[0];
+                if (cells.Any(x => x != first))
+                    continue;
+                if (first.IsDelimeter)
+                    row.Cells[r.Key].SetDelimeter();
                 else
-                {
-                    row.Cells[cellId].SetColor(cellTemplate.Color);
-                }
+                    row.Cells[r.Key].SetColor(first.Color);
+
             }
             //check whether all cells have been solved
-            if (row.Cells.TrueForAll(x => x.HasColor || x.IsDelimeter))
+            if (row.Cells.Any(x => x.HasColor || x.IsDelimeter))
             {
                 row.State = RowState.Solved;
             }
         }
+
+        private List<Route> GetAllRoutes(Route route)
+        {
+            var list = new List<Route>(route.ChildRoutes);
+            foreach (var r in route.ChildRoutes)
+            {
+                list.AddRange(GetAllRoutes(r));
+            }
+            return list;
+        }
+
+        private void ClearDeadRoutes(Route route, FinitAutomationRow faRow, int count)
+        {
+            //if route's children are not empty we should invoke this function for every route's children
+            if (route.ChildRoutes.Any())
+            {
+                var routesToProcess = new List<Route>(route.ChildRoutes);
+                foreach (var nextRoute in routesToProcess)
+                {
+                    ClearDeadRoutes(nextRoute, faRow, count);
+                }
+            }
+            else
+            {
+                //for the last child we check edge number. 
+                //If number is not equal to the DA's row  last edge number - remove this route children
+                if (route.EdgeIdx != faRow.LastEdgeNumber || route.CellIdx != count-1)
+                {
+                    RemoveRouteInParent(route);
+                }
+            }
+        }
+
+        private void RemoveRouteInParent(Route route)
+        {
+            var parent = route.ParentRoute;
+            if (parent != null)
+            {
+                parent.ChildRoutes.Remove(route);
+                if (!parent.ChildRoutes.Any())
+                {
+                    RemoveRouteInParent(parent);
+                }
+            }
+        }
+
+        private void BuildRoute(List<Cell> cells, FinitAutomationRow faRow, List<Cell> possibleCells, int cIdx, int edgeNum, Route route)
+        {
+            if (cIdx >= cells.Count)
+                return;
+            var cell = cells[cIdx];
+            var curPossibleCells = cell.IsUndefined
+                ? possibleCells
+                : new List<Cell> { cell };
+            var edge = faRow.GetEdgeByNumber(edgeNum);
+            var edgeData = faRow.EdgeData(edge);
+            //possible moves from the edge accroding to possible current cell's states
+            var edgesToMove = edgeData.Where(x => curPossibleCells.Any(pc => x.Value(pc)));
+            var nextIdx = cIdx + 1;
+            foreach (var kvp in edgesToMove)
+            {
+                var cellTemplate = curPossibleCells.First(c => kvp.Value(c));
+                var child = new Route(cIdx, kvp.Key.Number);
+                child.Cell = cellTemplate;
+                child.ParentRoute = route;
+                route.ChildRoutes.Add(child);
+                BuildRoute(cells, faRow, possibleCells, nextIdx, kvp.Key.Number, child);
+            }
+        }
+    }
+
+    public class Route
+    {
+        public int CellIdx { get;set; }
+        public int EdgeIdx { get; set; }
+
+        public Route()
+        {
+            ChildRoutes = new List<Route>();
+        }
+
+        public Route(int cellIdx, int edgeIdx)
+            : this()
+        {
+            CellIdx = cellIdx;
+            EdgeIdx = edgeIdx;
+        }
+
+        public List<Route> ChildRoutes { get; set; }
+        public Route ParentRoute { get; set; }
+        public Cell Cell { get; set; }
     }
 }
